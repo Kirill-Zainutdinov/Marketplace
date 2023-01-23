@@ -105,6 +105,9 @@ contract Marketplace{
         Item memory item = list[id];
         require(msg.value >= item.price, "Marketplace: not enough ETH");
  
+        // remove token from sale
+        delete list[id];
+
         // send  ETH to token woner
         payable(item.tokenOwner).transfer(item.price);
         // send token ERC721 to buyer
@@ -114,9 +117,6 @@ contract Marketplace{
         if(msg.value > item.price){
             payable(msg.sender).transfer(msg.value - item.price);
         }
- 
-        // remove token from sale
-        delete list[id];
  
         emit BuyItem(id);
     }
@@ -196,11 +196,11 @@ contract Marketplace{
         
         IERC721 token721 = IERC721(auctionItem.tokenAddress);
 
-        uint256 price = 0;
+        // remove token from sale
+        delete listAuction[id];
+
         // if even one bid has been made
         if(auctionItem.bidCount > 0){
-            price = auctionItem.currentPrice;
-            listAuction[id].currentPrice = 0;
             // send ETH to seller
             payable(auctionItem.tokenOwner).transfer(auctionItem.currentPrice);
             // send ERC721 token to buyer
@@ -220,10 +220,7 @@ contract Marketplace{
             );
         }
 
-        // remove token from sale
-        delete listAuction[id];
-
-        emit FinishAuction(id, price);
+        emit FinishAuction(id, auctionItem.currentPrice);
     }
 
     // check that tokenAddress support ERC721 interfaces
